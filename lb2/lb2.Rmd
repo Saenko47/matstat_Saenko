@@ -7,9 +7,12 @@ output:
     toc: true
     toc_float: true
     highlight: tango
-  word_document:
-    toc: true
   pdf_document:
+    toc: true
+  github_document:
+    toc: true
+    toc_depth: 3
+  word_document:
     toc: true
 fontsize: 12pt
 header-includes:
