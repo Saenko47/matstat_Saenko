@@ -1,5 +1,5 @@
 ---
-title: "Лабораторна робота №3. Нормальний розподіл"
+title: "Лабараторна робота 3"
 author: "Саєнко Олексій"
 date: "2025-11-30"
 output:
@@ -7,719 +7,242 @@ output:
     toc: true
     toc_float: true
     highlight: tango
+  pdf_document:
+    toc: true
+  github_document:
+    toc: true
+    toc_depth: 3
+  word_document:
+    toc: true
 fontsize: 12pt
+header-includes:
+- \usepackage[T2A]{fontenc}
+- \usepackage[utf8]{inputenc}
+- \usepackage[russian]{babel}
 editor_options:
   chunk_output_type: console
 ---
 
-# Постановка задачі
+# **Лабораторна робота № 3. Основи вибіркового методу**
 
-Випадкова величина \(X\) має нормальний закон розподілу  
+**Мета:** засвоїти основи статистичного оцінювання характеристик випадкової величини на основі вибіркового підходу з використанням мови R та R Markdown.
+
+# **1. Постановка задачі**
+
+Випадкова величина  
 \[
-X \sim N(a, \sigma^2),
-\]  
-де параметри відомі і дорівнюють \((a, \sigma^2) = (0, 1)\).  
-Тобто математичне сподівання \(a = 0\), а дисперсія \(\sigma^2 = 1\).
-
-Необхідно згенерувати дві вибірки випадкової величини \(X\), що має розподіл  
+X \sim N(a,\sigma^2)
+\]
+де параметри відомі:  
 \[
-X \sim N(0,1),
-\]  
-обсягами \(n = 100\) та \(n = 1000\), і на їх основі обчислити оцінки параметрів розподілу  
-\[
-\tilde{a} \approx a,\qquad 
-\tilde{\sigma} \approx \sigma,
-\]  
-а також дослідити інші статистичні характеристики. Потрібно виконати порівняльний аналіз вибіркових оцінок між собою та з теоретичними значеннями.
-
-# Мета роботи
-
-Дослідити на практиці властивості вибіркових оцінок параметрів нормального розподілу, побудувати статистичні розподіли, гістограми, графіки функцій щільності та розподілу, а також оцінити числові характеристики (математичне сподівання, дисперсію, СКВ, асиметрію, ексцес) для вибірок обсягами \(n = 100\) та \(n = 1000\).
-
-# Завдання
-
-1. Побудувати статистичний розподіл у вигляді інтервальної таблиці відносних частот.  
-2. Побудувати гістограму та накласти на неї теоретичну \(f(x,a,\sigma)\) та емпіричну \(f^{*}(x,\tilde a,\tilde\sigma)\) функції щільності.  
-3. Побудувати графіки теоретичної \(F(x,a,\sigma)\) та емпіричної \(F^{*}(x,\tilde a,\tilde\sigma)\) функцій розподілу.  
-4. Побудувати п’ятиквантильний графік (boxplot, «ящик з вусами»).  
-5. Обчислити незміщені й обґрунтовані оцінки параметрів \(a, \sigma^2\), математичного сподівання \(m(x)\), дисперсії \(D(x)\), СКВ \(\sigma(x)\), центральних моментів 3-го \(\mu_3\) та 4-го \(\mu_4\) порядків, асиметрії \(As\) та ексцесу \(Ek\):  
-   - власними користувацькими функціями;  
-   - вбудованими засобами R;  
-   - з подальшим занесенням результатів до узагальнювальної таблиці.
-
-# Теоретичні характеристики нормального розподілу
-
-Для нормального розподілу \(N(a, \sigma^2)\) [@dobronets2019]:
-
-- Щільність розподілу:
-\[
-f(x; a, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-a)^2}{2\sigma^2}\right).
+(a,\sigma^2) = (1,4),\quad \sigma = 2.
 \]
 
-- Математичне сподівання: \(m(x) = a\).  
-- Дисперсія: \(D(x) = \sigma^2\).  
-- Центральний момент 3-го порядку: \(\mu_3 = 0\).  
-- Центральний момент 4-го порядку: \(\mu_4 = 3\sigma^4\).  
-- Асиметрія: \(As = 0\).  
-- Ексцес: \(Ek = 0\).
+Необхідно:
 
-# Підготовка середовища
+1. Згенерувати дві вибірки розмірів n = 100 та n = 1000.
+2. Побудувати інтервальний розподіл, гістограму, теоретичну та емпіричну щільність.
+3. Побудувати теоретичну та емпіричну функції розподілу.
+4. Побудувати boxplot.
+5. Обчислити точкові оцінки параметрів, включаючи моменти, асиметрію та ексцес.
+6. Заповнити підсумкову таблицю.
 
-```{r libraries, message=FALSE, warning=FALSE}
-options(repos = c(CRAN = "https://cloud.r-project.org"))
+# **2. Генерація вибірки n = 100**
 
-needed <- c("ggplot2", "dplyr", "tidyr", "moments", "beeswarm", "knitr", "DT")
-to_install <- needed[!(needed %in% installed.packages()[, "Package"])]
-if (length(to_install) > 0) {
-  install.packages(to_install, dependencies = TRUE)
-}
+```{r}
+set.seed(0) 
+n <- 100  
+a <- 1  
+s <- 2 
+X <- rnorm(n, a, s)
+cat("\n", "Параметри вибірки:", "\n", 
+    "a = ", a, "\n" , 
+    "s = ", s, "\n" , 
+    "n = ", n, "\n")
+```
 
-library(ggplot2)
-library(dplyr)
-library(tidyr)
+```{r}
+cat("Перші елементи вибірки:", head(X))
+```
+
+```{r}
+cat("Останні елементи вибірки:", tail(X))
+```
+
+```{r}
+SortX <- sort(X)
+plot(SortX, col=4)
+title("Варіаційний ряд - доля значень")
+```
+
+# **3. Інтервальний розподіл та гістограми**
+
+```{r}
+1 + 1.332 * log(n)
+```
+
+```{r}
+table(cut(X, nclass.Sturges(X)))
+```
+
+```{r}
+hist(X, breaks=nclass.Sturges(X),
+     col="Lightblue",
+     main="Гістограма частот")
+```
+
+```{r}
+hist(X,
+     freq = FALSE,
+     col = "Lightblue",
+     main = "Гістограма відносних частот")
+curve(dnorm(x, a, s), col = 2, lty = 2, lwd = 2, add = TRUE) 
+curve(dnorm(x, mean(X), sd(X)), col = 3, lty = 2, lwd = 2, add = TRUE)
+```
+
+# **4. Сумарні статистики**
+
+```{r}
+summary(X)
+```
+
+```{r}
+mean(X)
+sd(X)
+IQR(X)
+```
+
+```{r}
+library(Hmisc)
+describe(X)
+```
+
+```{r}
 library(moments)
+my_summary <- function(X, ...) {
+  cat("\n", "Оцінки статистичних характеристик вибірки:", "\n", 
+      "вибіркове математичне сподівання, m = ", mean(X), "\n",
+      "Медіана, Ме = ", median(X) , "\n",
+      "вибіркова дисперсія, s^2 = ", var(X), "\n" ,
+      "вибіркове СКВ, s = ", sd(X), "\n" ,
+      "Розмах, R = ", max(X) - min(X), "\n" ,
+      "Інтерквартільний розмах, IQR = ", IQR(X), "\n",
+      "Ексцес, Ek = ", kurtosis(X), "\n",
+      "Асиметрія, As = ", skewness(X), "\n"
+    )
+}
+
+my_summary(X,  na.rm = FALSE)
+```
+
+# **5. Теоретичний та емпіричний розподіли**
+
+```{r}
+plot(density(X, adjust=2), main="Оцінка щільності", col=4)
+rug(X, col=2)
+```
+
+```{r}
+Fn <- ecdf(X)
+
+plot(Fn,
+     verticals = TRUE,
+     col.points = "blue",
+     col.hor = "red",
+     col.vert = "bisque",
+     main = "Емпірична функція розподілу")
+```
+
+# **6. Боксплот**
+
+```{r}
 library(beeswarm)
-library(knitr)
-library(DT)
+boxplot(X, main="box-plot X")  
+beeswarm(X, col=2, add=TRUE) 
 ```
 
-# Генерація вибірок
+# **7. Компактний графічний вивід**
 
-## Параметри розподілу
+```{r}
+library(beeswarm)
+library(moments)
 
-```{r parameters}
-a <- 0       # математичне сподівання
-s <- 1       # середньоквадратичне відхилення
-sigma2 <- s^2
+if (!exists("X")) {
+  set.seed(0)
+  n <- 100
+  a <- 1
+  s <- 2
+  X <- rnorm(n, a, s)
+  Fn <- ecdf(X)
+}
 
-n1 <- 100
-n2 <- 1000
+op <- par(mfrow = c(2,2))
 
-cat("Параметри нормального розподілу:\n")
-cat("a =", a, "\n")
-cat("σ =", s, "\n")
-cat("σ² =", sigma2, "\n\n")
-cat("Обсяги вибірок: n₁ =", n1, ", n₂ =", n2, "\n")
-```
+hist(X, freq = FALSE, col = "Lightgray", main="Histogram", border=4)
+curve(dnorm(x, a, s), col = 2, lty = 2, lwd = 2, add = TRUE)
 
-## Генерація першої вибірки (n = 100)
+plot(Fn, main = "Quantile Plot", verticals = TRUE, 
+     col.points = "blue", col.hor = "red", col.vert = "bisque",
+     xlab = "X", ylab = "Fn(x)")
 
-```{r sample100}
-set.seed(42)
-X1 <- rnorm(n1, mean = a, sd = s)
+boxplot(X, main = "Box-and-Wisker Plot", col = "Lightgray", border = 4, 
+        xlab = "X", ylab = "", horizontal = TRUE)
+beeswarm(X, col = 2, add = TRUE, horizontal = TRUE)
 
-cat("Перші 10 елементів вибірки (n = 100):\n")
-print(head(X1, 10))
-
-cat("\nОстанні 10 елементів вибірки (n = 100):\n")
-print(tail(X1, 10))
-```
-
-### Описові статистики (n = 100)
-
-```{r summary100}
-summary(X1)
-```
-
-## Генерація другої вибірки (n = 1000)
-
-```{r sample1000}
-set.seed(42)
-X2 <- rnorm(n2, mean = a, sd = s)
-
-cat("Перші 10 елементів вибірки (n = 1000):\n")
-print(head(X2, 10))
-
-cat("\nОстанні 10 елементів вибірки (n = 1000):\n")
-print(tail(X2, 10))
-```
-
-### Описові статистики (n = 1000)
-
-```{r summary1000}
-summary(X2)
-```
-
-# Статистичний розподіл
-
-## Інтервальна таблиця відносних частот (n = 100)
-
-```{r freq_table100}
-k1 <- ceiling(1 + 3.322 * log10(n1))
-
-breaks1 <- seq(min(X1), max(X1), length.out = k1 + 1)
-intervals1 <- cut(X1, breaks = breaks1, include.lowest = TRUE)
-
-freq_table1 <- data.frame(
-  Interval = levels(intervals1),
-  Frequency = as.numeric(table(intervals1)),
-  RelativeFreq = as.numeric(table(intervals1)) / n1
-)
-
-knitr::kable(
-  freq_table1,
-  caption = "Таблиця 1. Інтервальний розподіл відносних частот (n = 100)",
-  digits = 4,
-  col.names = c("Інтервал", "Частота", "Відносна частота")
-)
-```
-
-## Інтервальна таблиця відносних частот (n = 1000)
-
-```{r freq_table1000}
-k2 <- ceiling(1 + 3.322 * log10(n2))
-
-breaks2 <- seq(min(X2), max(X2), length.out = k2 + 1)
-intervals2 <- cut(X2, breaks = breaks2, include.lowest = TRUE)
-
-freq_table2 <- data.frame(
-  Interval = levels(intervals2),
-  Frequency = as.numeric(table(intervals2)),
-  RelativeFreq = as.numeric(table(intervals2)) / n2
-)
-
-knitr::kable(
-  freq_table2,
-  caption = "Таблиця 2. Інтервальний розподіл відносних частот (n = 1000)",
-  digits = 4,
-  col.names = c("Інтервал", "Частота", "Відносна частота")
-)
-```
-
-# Візуалізація даних
-
-## Комплексна візуалізація (n = 100)
-
-```{r viz100, fig.height=8, fig.width=10}
-op <- par(mfrow = c(2, 2))
-
-# 1. Гістограма з теоретичною та емпіричною щільністю
-hist(
-  X1,
-  freq = FALSE,
-  col = "lightblue",
-  border = "darkblue",
-  main = "Гістограма (n = 100)",
-  xlab = "x",
-  ylab = "Щільність",
-  ylim = c(0, max(density(X1)$y) * 1.2)
-)
-
-curve(
-  dnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  lty = 1,
-  add = TRUE
-)
-
-a_hat1 <- mean(X1)
-s_hat1 <- sd(X1)
-curve(
-  dnorm(x, mean = a_hat1, sd = s_hat1),
-  col = "blue",
-  lwd = 2,
-  lty = 2,
-  add = TRUE
-)
-
-legend(
-  "topright",
-  legend = c("Теоретична", "Емпірична"),
-  col = c("red", "blue"),
-  lty = c(1, 2),
-  lwd = 2,
-  cex = 0.8
-)
-
-# 2. Емпірична функція розподілу
-Fn1 <- ecdf(X1)
-plot(
-  Fn1,
-  main = "Функція розподілу (n = 100)",
-  verticals = TRUE,
-  col.points = "blue",
-  col.hor = "lightblue",
-  xlab = "x",
-  ylab = "F(x)"
-)
-
-curve(
-  pnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  add = TRUE
-)
-
-legend(
-  "bottomright",
-  legend = c("Емпірична", "Теоретична"),
-  col = c("blue", "red"),
-  lty = 1,
-  lwd = 2,
-  cex = 0.8
-)
-
-# 3. Boxplot
-boxplot(
-  X1,
-  main = "Ящик з вусами (n = 100)",
-  col = "lightgreen",
-  border = "darkgreen",
-  xlab = "",
-  ylab = "x",
-  horizontal = FALSE
-)
-
-beeswarm(
-  X1,
-  col = "darkgreen",
-  add = TRUE,
-  pch = 16,
-  cex = 0.5
-)
-
-# 4. Ядерна оцінка щільності
-plot(
-  density(X1, adjust = 2),
-  main = "Ядерна оцінка щільності (n = 100)",
-  xlab = "x",
-  ylab = "Щільність",
-  col = "purple",
-  lwd = 2
-)
-
-rug(X1, col = "darkblue")
-
-curve(
-  dnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  lty = 2,
-  add = TRUE
-)
-
-legend(
-  "topright",
-  legend = c("Ядерна оцінка", "Теоретична"),
-  col = c("purple", "red"),
-  lty = c(1, 2),
-  lwd = 2,
-  cex = 0.8
-)
+plot(density(X, adjust = 2), main = "density trace", 
+     xlab = "X", ylab = "Density", col = "blue")
+rug(X, col = 2)
 
 par(op)
 ```
 
-## Комплексна візуалізація (n = 1000)
+# **8. Результуюча таблиця**
 
-```{r viz1000, fig.height=8, fig.width=10}
-op <- par(mfrow = c(2, 2))
+```{r}
+n1000 <- 1000
+X1000 <- rnorm(n1000, a, s)
 
-# 1. Гістограма
-hist(
-  X2,
-  freq = FALSE,
-  col = "lightcoral",
-  border = "darkred",
-  main = "Гістограма (n = 1000)",
-  xlab = "x",
-  ylab = "Щільність",
-  ylim = c(0, max(density(X2)$y) * 1.2)
-)
-
-curve(
-  dnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  lty = 1,
-  add = TRUE
-)
-
-a_hat2 <- mean(X2)
-s_hat2 <- sd(X2)
-curve(
-  dnorm(x, mean = a_hat2, sd = s_hat2),
-  col = "blue",
-  lwd = 2,
-  lty = 2,
-  add = TRUE
-)
-
-legend(
-  "topright",
-  legend = c("Теоретична", "Емпірична"),
-  col = c("red", "blue"),
-  lty = c(1, 2),
-  lwd = 2,
-  cex = 0.8
-)
-
-# 2. Емпірична функція розподілу
-Fn2 <- ecdf(X2)
-plot(
-  Fn2,
-  main = "Функція розподілу (n = 1000)",
-  verticals = TRUE,
-  col.points = "blue",
-  col.hor = "lightblue",
-  xlab = "x",
-  ylab = "F(x)"
-)
-
-curve(
-  pnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  add = TRUE
-)
-
-legend(
-  "bottomright",
-  legend = c("Емпірична", "Теоретична"),
-  col = c("blue", "red"),
-  lty = 1,
-  lwd = 2,
-  cex = 0.8
-)
-
-# 3. Boxplot
-boxplot(
-  X2,
-  main = "Ящик з вусами (n = 1000)",
-  col = "lightyellow",
-  border = "orange",
-  xlab = "",
-  ylab = "x",
-  horizontal = FALSE
-)
-
-# 4. Ядерна оцінка щільності
-plot(
-  density(X2, adjust = 2),
-  main = "Ядерна оцінка щільності (n = 1000)",
-  xlab = "x",
-  ylab = "Щільність",
-  col = "darkgreen",
-  lwd = 2
-)
-
-rug(X2, col = "darkblue")
-
-curve(
-  dnorm(x, mean = a, sd = s),
-  col = "red",
-  lwd = 2,
-  lty = 2,
-  add = TRUE
-)
-
-legend(
-  "topright",
-  legend = c("Ядерна оцінка", "Теоретична"),
-  col = c("darkgreen", "red"),
-  lty = c(1, 2),
-  lwd = 2,
-  cex = 0.8
-)
-
-par(op)
-```
-
-# Обчислення статистичних характеристик
-
-## Користувацькі функції
-
-```{r custom_functions}
-sample_mean <- function(x) {
-  sum(x) / length(x)
-}
-
-sample_var <- function(x) {
-  m <- sample_mean(x)
-  sum((x - m)^2) / length(x)
-}
-
-unbiased_var <- function(x) {
-  m <- sample_mean(x)
-  n <- length(x)
-  sum((x - m)^2) / (n - 1)
-}
-
-sample_sd <- function(x) {
-  sqrt(sample_var(x))
-}
-
-unbiased_sd <- function(x) {
-  sqrt(unbiased_var(x))
-}
-
-central_moment <- function(x, k) {
-  m <- sample_mean(x)
-  sum((x - m)^k) / length(x)
-}
-
-sample_skewness <- function(x) {
-  mu3 <- central_moment(x, 3)
-  sigma <- sample_sd(x)
-  mu3 / sigma^3
-}
-
-sample_kurtosis <- function(x) {
-  mu4 <- central_moment(x, 4)
-  sigma <- sample_sd(x)
-  mu4 / sigma^4 - 3
-}
-```
-
-## Обчислення для вибірки n = 100
-
-```{r stats100}
-a_hat1_custom <- sample_mean(X1)
-s_hat1_custom <- sample_sd(X1)
-m1_custom <- sample_mean(X1)
-D1_custom <- sample_var(X1)
-D1_unbiased_custom <- unbiased_var(X1)
-sigma1_custom <- sample_sd(X1)
-sigma1_unbiased_custom <- unbiased_sd(X1)
-mu3_1_custom <- central_moment(X1, 3)
-mu4_1_custom <- central_moment(X1, 4)
-As1_custom <- sample_skewness(X1)
-Ek1_custom <- sample_kurtosis(X1)
-
-cat("Порівняння результатів обчислень для n = 100 (власні функції):\n\n")
-cat("ã =", a_hat1_custom, "\n")
-cat("σ̃ =", s_hat1_custom, "\n")
-cat("m̃(x) =", m1_custom, "\n")
-cat("D̃(x) =", D1_custom, "\n")
-cat("D̃̃(x) =", D1_unbiased_custom, "\n")
-cat("σ̃(x) =", sigma1_custom, "\n")
-cat("σ̃̃(x) =", sigma1_unbiased_custom, "\n")
-cat("μ̃₃ =", mu3_1_custom, "\n")
-cat("μ̃₄ =", mu4_1_custom, "\n")
-cat("Ãs =", As1_custom, "\n")
-cat("Ẽk =", Ek1_custom, "\n")
-```
-
-## Обчислення для вибірки n = 1000
-
-```{r stats1000}
-a_hat2_custom <- sample_mean(X2)
-s_hat2_custom <- sample_sd(X2)
-m2_custom <- sample_mean(X2)
-D2_custom <- sample_var(X2)
-D2_unbiased_custom <- unbiased_var(X2)
-sigma2_custom <- sample_sd(X2)
-sigma2_unbiased_custom <- unbiased_sd(X2)
-mu3_2_custom <- central_moment(X2, 3)
-mu4_2_custom <- central_moment(X2, 4)
-As2_custom <- sample_skewness(X2)
-Ek2_custom <- sample_kurtosis(X2)
-
-cat("Результати обчислень для n = 1000 (власні функції):\n\n")
-cat("ã =", a_hat2_custom, "\n")
-cat("σ̃ =", s_hat2_custom, "\n")
-cat("m̃(x) =", m2_custom, "\n")
-cat("D̃(x) =", D2_custom, "\n")
-cat("D̃̃(x) =", D2_unbiased_custom, "\n")
-cat("σ̃(x) =", sigma2_custom, "\n")
-cat("σ̃̃(x) =", sigma2_unbiased_custom, "\n")
-cat("μ̃₃ =", mu3_2_custom, "\n")
-cat("μ̃₄ =", mu4_2_custom, "\n")
-cat("Ãs =", As2_custom, "\n")
-cat("Ẽk =", Ek2_custom, "\n")
-```
-
-# Зведена таблиця результатів
-
-```{r results_table}
-theoretical <- c(
-  a = 0,
-  sigma = 1,
-  m_x = 0,
-  D_x = 1,
-  D_x_unbiased = NA,
-  sigma_x = 1,
-  sigma_x_unbiased = NA,
-  mu3 = 0,
-  mu4 = 3,
-  As = 0,
-  Ek = 0
-)
-
-sample100 <- c(
-  a = a_hat1_custom,
-  sigma = s_hat1_custom,
-  m_x = m1_custom,
-  D_x = D1_custom,
-  D_x_unbiased = D1_unbiased_custom,
-  sigma_x = sigma1_custom,
-  sigma_x_unbiased = sigma1_unbiased_custom,
-  mu3 = mu3_1_custom,
-  mu4 = mu4_1_custom,
-  As = As1_custom,
-  Ek = Ek1_custom
-)
-
-sample1000 <- c(
-  a = a_hat2_custom,
-  sigma = s_hat2_custom,
-  m_x = m2_custom,
-  D_x = D2_custom,
-  D_x_unbiased = D2_unbiased_custom,
-  sigma_x = sigma2_custom,
-  sigma_x_unbiased = sigma2_unbiased_custom,
-  mu3 = mu3_2_custom,
-  mu4 = mu4_2_custom,
-  As = As2_custom,
-  Ek = Ek2_custom
-)
-
-results_df <- data.frame(
-  Характеристика = c(
-    "a",
-    "σ",
-    "Математичне сподівання m(x)",
-    "Дисперсія D(x)",
-    "Виправлена дисперсія D̃̃(x)",
-    "СКВ σ(x)",
-    "Виправлене СКВ σ̃̃(x)",
-    "Центральний момент 3-го порядку μ₃",
-    "Центральний момент 4-го порядку μ₄",
-    "Асиметрія As",
-    "Ексцес Ek"
-  ),
-  Теоретичне = theoretical,
-  Вибіркове_n100 = sample100,
-  Вибіркове_n1000 = sample1000
-)
-
-knitr::kable(
-  results_df,
-  caption = "Таблиця 3. Теоретичні та емпіричні числові характеристики випадкової величини",
-  digits = 6,
-  col.names = c(
-    "Назва числової характеристики",
-    "Теоретичне значення",
-    "Вибіркове значення (n=100)",
-    "Вибіркове значення (n=1000)"
+table_res <- data.frame(
+  Характеристика = c("a теор.", "a вибіркове (100)", "a вибіркове (1000)",
+                     "σ теор.", "σ вибіркове (100)", "σ вибіркове (1000)",
+                     "D теор.", "D вибіркове (100)", "D вибіркове (1000)"),
+  Значення = c(
+    a,
+    mean(X),
+    mean(X1000),
+    s,
+    sd(X),
+    sd(X1000),
+    s^2,
+    var(X),
+    var(X1000)
   )
 )
+
+table_res
 ```
+# **9. Контрольні питання**
+1. Що таке вибірка?
 
-## Інтерактивна таблиця результатів
+Вибірка — це набір значень випадкової величини, отриманий у результаті експерименту або спостереження. Вона використовується для оцінювання характеристик генеральної сукупності, коли немає можливості працювати з усією сукупністю.
 
-```{r interactive_table}
-datatable(
-  results_df,
-  caption = "Інтерактивна таблиця результатів",
-  options = list(pageLength = 11, dom = 't'),
-  rownames = FALSE,
-  colnames = c("Характеристика", "Теоретичне", "n=100", "n=1000")
-) %>%
-  formatRound(columns = 2:4, digits = 6)
-```
+2. Як можна оцінити вибіркове математичне сподівання?
 
-# Аналіз результатів
+Вибіркове математичне сподівання оцінюють як середнє арифметичне всіх елементів вибірки. Це точкова оцінка середнього значення генеральної сукупності, що наближає істинне математичне сподівання.
 
-## Порівняння оцінок параметрів
+3. Які існують міри розсіювання?
 
-```{r comparison}
-error_a_100 <- abs(a_hat1_custom - a)
-error_sigma_100 <- abs(s_hat1_custom - s)
+Основні міри розсіювання включають дисперсію, середнє квадратичне відхилення, середнє абсолютне відхилення та розмах. Вони характеризують ступінь відхилення значень вибірки від її середнього значення та показують, наскільки вибірка «розкидана» у просторі значень.
 
-error_a_1000 <- abs(a_hat2_custom - a)
-error_sigma_1000 <- abs(s_hat2_custom - s)
+4. Які міри форми розподілу вам відомі? Що вони характеризують? Як їх оцінити на практиці?
 
-cat("Абсолютні похибки оцінювання:\n\n")
-cat("Для n = 100:\n")
-cat("  |ã - a| =", error_a_100, "\n")
-cat("  |σ̃ - σ| =", error_sigma_100, "\n\n")
+До мір форми розподілу належать коефіцієнти асиметрії та ексцесу.
+Асиметрія характеризує ступінь нерівномірності розподілу відносно його середнього значення (перекіс).
+Ексцес описує «гостроверхість» або «плосковерхість» порівняно з нормальним розподілом.
+На практиці їх оцінюють за вибірковими формулами, що базуються на центральних моментах відповідного порядку.
+---
+# **Висновок**
 
-cat("Для n = 1000:\n")
-cat("  |ã - a| =", error_a_1000, "\n")
-cat("  |σ̃ - σ| =", error_sigma_1000, "\n\n")
+У ході виконання лабораторної роботи було досліджено основні підходи вибіркового методу для оцінювання параметрів випадкової величини з нормальним розподілом. Було згенеровано вибірки різного обсягу, побудовано інтервальні та графічні характеристики (гістограми, щільності, функції розподілу, boxplot), а також обчислено точкові оцінки основних статистичних параметрів: середнього, дисперсії, СКВ, асиметрії та ексцесу.
 
-cat("Відношення похибок:\n")
-cat("  Похибка ã зменшилась у", error_a_100 / error_a_1000, "разів\n")
-cat("  Похибка σ̃ зменшилась у", error_sigma_100 / error_sigma_1000, "разів\n")
-```
-
-## Графік збіжності оцінок
-
-```{r convergence_plot, fig.width=10, fig.height=6}
-set.seed(42)
-sample_sizes <- seq(10, 1000, by = 10)
-means_convergence <- numeric(length(sample_sizes))
-sds_convergence <- numeric(length(sample_sizes))
-
-temp_sample <- rnorm(max(sample_sizes), mean = a, sd = s)
-
-for (i in seq_along(sample_sizes)) {
-  n_current <- sample_sizes[i]
-  means_convergence[i] <- mean(temp_sample[1:n_current])
-  sds_convergence[i] <- sd(temp_sample[1:n_current])
-}
-
-par(mfrow = c(1, 2))
-
-plot(
-  sample_sizes, means_convergence,
-  type = "l",
-  col = "blue",
-  lwd = 2,
-  main = "Збіжність оцінки математичного сподівання",
-  xlab = "Обсяг вибірки n",
-  ylab = "ã"
-)
-abline(h = a, col = "red", lwd = 2, lty = 2)
-legend(
-  "topright",
-  legend = c("Оцінка ã", "Теоретичне a"),
-  col = c("blue", "red"),
-  lty = c(1, 2),
-  lwd = 2
-)
-
-plot(
-  sample_sizes, sds_convergence,
-  type = "l",
-  col = "darkgreen",
-  lwd = 2,
-  main = "Збіжність оцінки СКВ",
-  xlab = "Обсяг вибірки n",
-  ylab = "σ̃"
-)
-abline(h = s, col = "red", lwd = 2, lty = 2)
-legend(
-  "topright",
-  legend = c("Оцінка σ̃", "Теоретичне σ"),
-  col = c("darkgreen", "red"),
-  lty = c(1, 2),
-  lwd = 2
-)
-
-par(mfrow = c(1, 1))
-```
-# Контрольні запитання
-
-## 1. Що таке вибірка?
-
-Вибірка — це частина елементів генеральної сукупності, відібрана для спостереження та аналізу. Формально вибіркою об’єму \(n\) називають набір випадкових величин \(X = (x_1, x_2, \ldots, x_n)\), які є незалежними та однаково розподіленими і мають той самий закон розподілу, що й досліджувана ознака генеральної сукупності.
-
-## 2. Як можна оцінити вибіркове математичне сподівання?
-
-Вибіркове математичне сподівання оцінюється за допомогою вибіркового середнього (середнього арифметичного), яке обчислюється за формулою  
-\[
-\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i,
-\]  
-де \(x_i\) — значення вибірки, а \(n\) — її обсяг. Ця оцінка є незміщеною та обґрунтованою.
-
-## 3. Які існують міри розсіювання?
-
-До основних мір розсіювання належать: дисперсія, виправлена вибіркова дисперсія та середнє квадратичне відхилення (СКВ). Дисперсія характеризує середній квадрат відхилення значень від середнього, виправлена дисперсія використовується для більш точної оцінки при малих обсягах вибірки, а СКВ є коренем квадратним із дисперсії та виражає розсіювання в тих самих одиницях, що й сама ознака.
-
-## 4. Які міри форми розподілу вам відомі? Що вони характеризують? Як їх оцінити на практиці?
-
-До мір форми розподілу належать асиметрія та ексцес. Асиметрія характеризує міру нессиметричності розподілу відносно середнього: при значенні, близькому до нуля, розподіл є близьким до симетричного. Ексцес характеризує "гостровершинність" або "плескатість" розподілу порівняно з нормальним. На практиці ці характеристики оцінюють за вибірковими моментами 3-го та 4-го порядків з використанням стандартних формул або вбудованих функцій статистичних пакетів (наприклад, `skewness()` та `kurtosis()` у R).
-
+Отримані результати підтвердили, що зі збільшенням обсягу вибірки оцінки параметрів розподілу стають більш точними та наближеними до теоретичних значень. Практичне застосування R та R Markdown дозволило формалізувати процес аналізу, спростити обчислення та забезпечити reproducible research — відтворюваність результатів. Лабораторна робота продемонструвала важливість вибіркових характеристик у статистичному аналізі та їх роль у наближенні до властивостей генеральної сукупності.
